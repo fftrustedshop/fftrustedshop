@@ -12,7 +12,7 @@ export default function HeroSection() {
 
   return (
     <section className="px-4 pt-4 pb-8 bg-[#1a1a3e]">
-      <div className="mx-auto text-center">
+      <div className="mx-auto text-center ">
 
         {/* NOW LIVE pill */}
         <div
@@ -36,7 +36,7 @@ export default function HeroSection() {
         {/* Main Heading */}
         <h1
           className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-6"
-          style={{ lineHeight: 1.3 }}
+          style={{ lineHeight: 1.3, textShadow: "0 0 25px rgba(0, 229, 255, 0.45)" }}
         >
           🚨 Exclusive Deals – Hurry Before Stock Ends! 🛍️
         </h1>
@@ -55,12 +55,10 @@ export default function HeroSection() {
                          text-[13px] sm:text-md
                          text-white
                          transition-all
-                         duration-300
-                         hover:scale-105
-                         hover:shadow-xl"
+                         duration-300"
               style={{
                 background: "linear-gradient(135deg, #00a693, #007a6e)",
-                boxShadow: "0 4px 14px rgba(0,150,130,0.35)",
+                boxShadow: "0 0 025px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
                 animation: "floatX 2.8s ease-in-out infinite",
                 animationDelay: `${index * 0.25}s`,
               }}
@@ -95,6 +93,6 @@ export default function HeroSection() {
           }
         }
       `}</style>
-    </section>
+    </section >
   );
 }

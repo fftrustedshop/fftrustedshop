@@ -1,10 +1,28 @@
 import { useState, useEffect } from "react";
 
 export default function AnnouncementBanner() {
-  const [timeLeft, setTimeLeft] = useState((12 * 3600) + (7 * 60) + 36);
+  // Function to calculate seconds remaining until the next 12-hour block (12:00 AM or 12:00 PM)
+  const getSecondsToNext12Hours = () => {
+    const now = new Date();
+    const currentHours = now.getHours();
+
+    // Determine the next target hour threshold (12 or 24/0)
+    const targetHours = currentHours < 12 ? 12 : 24;
+
+    const targetTime = new Date(now);
+    targetTime.setHours(targetHours, 0, 0, 0);
+
+    const differenceInMs = targetTime.getTime() - now.getTime();
+    return Math.max(0, Math.floor(differenceInMs / 1000));
+  };
+
+  const [timeLeft, setTimeLeft] = useState(getSecondsToNext12Hours());
 
   useEffect(() => {
-    const id = setInterval(() => setTimeLeft(t => (t > 0 ? t - 1 : 0)), 1000);
+    const id = setInterval(() => {
+      setTimeLeft(getSecondsToNext12Hours());
+    }, 1000);
+
     return () => clearInterval(id);
   }, []);
 
@@ -25,16 +43,15 @@ export default function AnnouncementBanner() {
   const text = items.join("   |   ");
 
   return (
-    /* Top-level Layout Wrapper to replicate placement/inset from the screenshot */
     <div style={{ fontFamily: "Arial", width: "100%", padding: "20px 0 0 0", display: "flex", justifyContent: "center", background: "transparent" }}>
       <div
         className="w-full flex items-center justify-between gap-6 px-8 py-3 overflow-hidden"
         style={{
-          maxWidth: "760px", // Exact scale restraint relative to main content width
+          maxWidth: "760px",
           background: "rgba(11, 12, 34, 0.75)",
           border: "1px solid rgba(0, 229, 255, 0.25)",
           borderRadius: "14px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.05)",
+          boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
           minHeight: "72px",
           boxSizing: "border-box",
         }}
@@ -65,18 +82,19 @@ export default function AnnouncementBanner() {
           }}
         >
           <div
-            className="font-mono font-black text-xl sm:text-2xl px-5 py-2 rounded-xl select-none"
+            className="font-mono font-black text-lg sm:text-xl px-4 py-1.5 rounded-[9px] select-none"
             style={{
-              background: "#061329",
+              background: "linear-gradient(180deg, #040a17 0%, #081226 100%)",
               color: "#00e5ff",
-              letterSpacing: "0.06em",
-              textShadow: "0 0 14px rgba(0, 229, 255, 0.95), 0 0 4px rgba(0, 229, 255, 0.5)",
+              letterSpacing: "0.08em",
+              textShadow: "0 0 10px rgba(0, 229, 255, 0.6)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              minWidth: "140px",
-              height: "46px",
-              boxSizing: "border-box"
+              minWidth: "125px",
+              height: "40px",
+              boxSizing: "border-box",
+              boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
             }}
           >
             {hh}:{mm}:{ss}
@@ -85,18 +103,17 @@ export default function AnnouncementBanner() {
       </div>
       <style>
         {`@keyframes pulseGlow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    box-shadow: 0 0 12px rgba(0,229,255,0.25);
-  }
-
-  50% {
-    opacity: 0.9;
-    transform: scale(1.09);
-    box-shadow: 0 0 20px rgba(0,229,255,0.45);
-  }
-}`}
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 0 12px rgba(0,229,255,0.25);
+          }
+          50% {
+            opacity: 0.9;
+            transform: scale(1.04);
+            box-shadow: 0 0 20px rgba(0,229,255,0.45);
+          }
+        }`}
       </style>
     </div>
   );

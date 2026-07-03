@@ -277,7 +277,7 @@ export default function Payment() {
                   disabled={!qrUrl}
                   className="flex items-center justify-center gap-2 border border-white/10 bg-white/5 hover:bg-white/10 active:scale-98 text-gray-300 hover:text-white px-6 py-3 rounded-xl text-xs font-black tracking-wide transition-all w-full cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  ⬇ Download QR
+                  Download QR
                 </button>
               </div>
 
@@ -288,7 +288,7 @@ export default function Payment() {
                 </div>
                 <button
                   onClick={copyUPI}
-                  className="bg-[#00e5ff] text-[#080816] font-black text-xs px-4 py-2 rounded-xl hover:bg-[#00e5ff]/80 transition-colors shadow-lg active:scale-95 cursor-pointer"
+                  className="bg-[#00e5ff] text-[#080816] font-black text-xs px-4 py-2 mx-1 rounded-xl hover:bg-[#00e5ff]/80 transition-colors shadow-lg active:scale-95 cursor-pointer"
                 >
                   {copied ? "✓ Copied" : "Copy ID"}
                 </button>

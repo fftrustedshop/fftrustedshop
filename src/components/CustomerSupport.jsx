@@ -12,7 +12,7 @@ export default function CustomerSupport() {
   return (
     <section
       className="py-12 px-4"
-      style={{ background: "linear-gradient(135deg,#00897b,#00695c)" }}
+      style={{ background: "linear-gradient(135deg,#00897b,#00695c)", boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)" }}
     >
       <div className="max-w-4xl mx-auto">
 
@@ -22,7 +22,9 @@ export default function CustomerSupport() {
         </h2>
 
         {/* 3 support cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10" style={{
+          boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
+        }}>
           {[
             { icon: "📞", title: "24/7 Support", sub: "Available Round the Clock", value: "+91 7225023941", href: "tel:+917225023941" },
             { icon: "💬", title: "WhatsApp Support", sub: "Quick Response Guaranteed", value: "Chat Now", href: waLink, target: "_blank" },

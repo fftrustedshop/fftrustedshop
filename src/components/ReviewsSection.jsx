@@ -78,7 +78,10 @@ export default function ReviewsSection() {
         {/* Header */}
         <div
           className="rounded-xl px-6 py-5 text-center mb-5"
-          style={{ background: "linear-gradient(135deg,#00897b,#00695c)" }}
+          style={{
+            background: "linear-gradient(135deg,#00897b,#00695c)",
+            boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
+          }}
         >
           <h2 className="text-white font-black text-xl md:text-2xl mb-1">
             🔥 Today's Latest Reviews (Updated Live) 🔥
@@ -89,7 +92,9 @@ export default function ReviewsSection() {
         {/* Review cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {REVIEWS.map(r => (
-            <div key={r.name + r.time} className="bg-white rounded-xl px-5 py-4 shadow-md">
+            <div key={r.name + r.time} className="bg-white rounded-xl px-5 py-4 shadow-md" style={{
+              boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
+            }}>
               <p className="font-bold text-gray-900 text-sm mb-1">{r.name} ✓</p>
               <Stars count={r.stars} />
               <p className="text-gray-700 text-sm leading-relaxed mb-1.5">{r.text}</p>

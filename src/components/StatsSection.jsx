@@ -45,6 +45,7 @@ export default function StatsSection() {
               style={{
                 background: stat.color,
                 border: `1px solid ${stat.border}`,
+                boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-6px)";

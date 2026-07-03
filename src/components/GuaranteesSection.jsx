@@ -27,7 +27,7 @@ export default function GuaranteesSection() {
   return (
     <>
       {/* ── Our Guarantees ── */}
-      <section className="bg-[#1a1a3e] py-12 px-4">
+      <section className="bg-[#1a1a3e] pb-12 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-black text-center text-[#00e5ff] mb-8">
             Our Guarantees 🛡️
@@ -37,6 +37,9 @@ export default function GuaranteesSection() {
               <div
                 key={g.title}
                 className="bg-white rounded-xl p-6 text-center shadow-md hover:-translate-y-1 transition-transform duration-300"
+                style={{
+                  boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
+                }}
               >
                 <h3 className={`font-bold text-lg mb-2 ${g.color}`}>{g.icon} {g.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{g.desc}</p>
@@ -47,7 +50,7 @@ export default function GuaranteesSection() {
       </section>
 
       {/* ── Our Policies ── */}
-      <section className="bg-[#12122e] py-12 px-4">
+      <section className="bg-[#1a1a3e] pb-12 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-black text-center text-[#00e5ff] mb-8">
             Our Policies 📋
@@ -57,6 +60,9 @@ export default function GuaranteesSection() {
               <div
                 key={p.title}
                 className="bg-white rounded-xl p-5 shadow-md hover:-translate-y-1 transition-transform duration-300"
+                style={{
+                  boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
+                }}
               >
                 <h3 className="font-bold text-gray-900 text-base mb-2">{p.icon} {p.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{p.desc}</p>
