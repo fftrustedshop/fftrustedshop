@@ -2,25 +2,24 @@ import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
-import Navbar          from "../components/Navbar";
 import AnnouncementBanner from "../components/AnnouncementBanner";
-import HeroSection     from "../components/HeroSection";
-import Card            from "../components/Card";
-import SkeletonCard    from "../components/SkeletonCard";
-import EmptyState      from "../components/EmptyState";
-import ReviewsSection  from "../components/ReviewsSection";
-import WhyBuyFromUs    from "../components/WhyBuyFromUs";
+import HeroSection from "../components/HeroSection";
+import Card from "../components/Card";
+import SkeletonCard from "../components/SkeletonCard";
+import EmptyState from "../components/EmptyState";
+import ReviewsSection from "../components/ReviewsSection";
+import WhyBuyFromUs from "../components/WhyBuyFromUs";
 import GuaranteesSection from "../components/GuaranteesSection";
 import CustomerSupport from "../components/CustomerSupport";
-import PopupModal      from "../components/PopupModal";
+import PopupModal from "../components/PopupModal";
 import FloatingButtons from "../components/ScrollToTop";
-import Footer          from "../components/Footer";
+import Footer from "../components/Footer";
 
 export default function Home() {
-  const [accounts, setAccounts]       = useState([]);
-  const [loading,  setLoading]        = useState(true);
-  const [popupCard, setPopupCard]     = useState(null);
-  const [popupDone, setPopupDone]     = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [popupCard, setPopupCard] = useState(null);
+  const [popupDone, setPopupDone] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -51,14 +50,10 @@ export default function Home() {
       {popupCard && !popupDone && <PopupModal card={popupCard} onClose={closePopup} />}
 
       <AnnouncementBanner />
-      <Navbar />
       <HeroSection />
 
       {/* Cards */}
       <section id="accounts" className="px-4 py-8 max-w-6xl mx-auto">
-        <h2 className="text-xl font-black text-center text-white mb-6 tracking-wide">
-          🎮 Available Accounts
-        </h2>
 
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -7,11 +7,11 @@ import {
 // ── Password ──────────────────────────────────────────────────────────────────
 const ADMIN_PASSWORD = "fftrustedshop";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function Input({ label, type = "text", value, onChange, placeholder, min }) {
+// ── Shared UI Sub-Components ───────────────────────────────────────────────────
+function Input({ label, type = "text", value, onChange, placeholder, min, fullWidth = false }) {
   return (
-    <div>
-      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, gridColumn: fullWidth ? "1fr" : "span 1" }}>
+      <label style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
         {label}
       </label>
       <input
@@ -21,15 +21,27 @@ function Input({ label, type = "text", value, onChange, placeholder, min }) {
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         min={min}
+        style={{
+          width: "100%",
+          padding: "12px 16px",
+          background: "#161b3d",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: 10,
+          color: "#fff",
+          fontSize: 14,
+          outline: "none",
+          transition: "border-color 0.2s, box-shadow 0.2s",
+          boxSizing: "border-box"
+        }}
       />
     </div>
   );
 }
 
-function Textarea({ label, value, onChange, placeholder }) {
+function Textarea({ label, value, onChange, placeholder, gridSpan = "span 2" }) {
   return (
-    <div>
-      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, gridColumn: gridSpan }}>
+      <label style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
         {label}
       </label>
       <textarea
@@ -37,8 +49,22 @@ function Textarea({ label, value, onChange, placeholder }) {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        rows={4}
-        style={{ resize: "vertical", minHeight: 96, fontFamily: "inherit" }}
+        rows={5}
+        style={{
+          width: "100%",
+          padding: "14px 16px",
+          background: "#161b3d",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: 10,
+          color: "#fff",
+          fontSize: 14,
+          lineHeight: "1.5",
+          outline: "none",
+          resize: "vertical",
+          minHeight: 120,
+          fontFamily: "inherit",
+          boxSizing: "border-box"
+        }}
       />
     </div>
   );
@@ -46,15 +72,24 @@ function Textarea({ label, value, onChange, placeholder }) {
 
 function Toggle({ label, sub, checked, onChange }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "12px 16px" }}>
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      background: "rgba(255,255,255,0.03)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      borderRadius: 12,
+      padding: "16px 20px",
+      transition: "background 0.2s"
+    }}>
       <div>
-        <div style={{ fontWeight: 700, color: "#fff", fontSize: 14 }}>{label}</div>
-        {sub && <div style={{ color: "#64748b", fontSize: 12, marginTop: 2 }}>{sub}</div>}
+        <div style={{ fontWeight: 600, color: "#fff", fontSize: 14 }}>{label}</div>
+        {sub && <div style={{ color: "#64748b", fontSize: 12, marginTop: 4 }}>{sub}</div>}
       </div>
       <label style={{ position: "relative", display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
         <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{ position: "absolute", opacity: 0, width: 0, height: 0 }} />
-        <div style={{ width: 44, height: 24, borderRadius: 12, background: checked ? "#00c853" : "#334155", transition: "background 0.25s", position: "relative" }}>
-          <div style={{ position: "absolute", top: 3, left: checked ? 23 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.25s" }} />
+        <div style={{ width: 46, height: 24, borderRadius: 12, background: checked ? "#00c853" : "#334155", transition: "background 0.2s", position: "relative" }}>
+          <div style={{ position: "absolute", top: 3, left: checked ? 25 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
         </div>
       </label>
     </div>
@@ -70,7 +105,7 @@ function stringifyFeatures(arr) {
   return Array.isArray(arr) ? arr.join("\n") : (arr || "");
 }
 
-// ── Card Form ─────────────────────────────────────────────────────────────────
+// ── Card Form Component ────────────────────────────────────────────────────────
 function CardForm({ initial, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initial || EMPTY_FORM);
   const set = (k) => (v) => setForm(f => ({ ...f, [k]: v }));
@@ -82,8 +117,8 @@ function CardForm({ initial, onSave, onCancel, saving }) {
     onSave({
       title: form.title.trim(),
       badge: form.badge.trim(),
-      price: form.price,
-      oldPrice: form.oldPrice,
+      price: Number(form.price),
+      oldPrice: form.oldPrice ? Number(form.oldPrice) : "",
       videoUrl: form.videoUrl.trim(),
       features: parseFeatures(form.features),
       sold: !!form.sold,
@@ -93,45 +128,56 @@ function CardForm({ initial, onSave, onCancel, saving }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <Input label="Account Title *" value={form.title} onChange={set("title")} placeholder="e.g. Diamond Elite FF Account" />
-      <Input label="Badge Text" value={form.badge} onChange={set("badge")} placeholder="e.g. 86% OFF, NEW, WEEK OFFER" />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Input Grid Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+        <div style={{ gridColumn: "1 / -1" }}>
+          <Input label="Account Title *" value={form.title} onChange={set("title")} placeholder="e.g. Diamond Elite FF Account" />
+        </div>
+        <Input label="Badge Text" value={form.badge} onChange={set("badge")} placeholder="e.g. 86% OFF, NEW, WEEK OFFER" />
         <Input label="Price (₹) *" type="number" value={form.price} onChange={set("price")} placeholder="e.g. 599" min="0" />
         <Input label="Old Price (₹)" type="number" value={form.oldPrice} onChange={set("oldPrice")} placeholder="e.g. 1499" min="0" />
+        <div style={{ gridColumn: "1 / -1" }}>
+          <Input label="YouTube Embed URL" value={form.videoUrl} onChange={set("videoUrl")} placeholder="https://www.youtube.com/embed/xxxxx" fullWidth />
+        </div>
+        <Textarea
+          label="Features (one per line)"
+          value={typeof form.features === "string" ? form.features : stringifyFeatures(form.features)}
+          onChange={set("features")}
+          placeholder={"Level 60\nEVO Gun Max\n100+ Skins"}
+          gridSpan="1 / -1"
+        />
       </div>
-      <Input label="YouTube Embed URL" value={form.videoUrl} onChange={set("videoUrl")} placeholder="https://www.youtube.com/embed/xxxxx" />
-      <Textarea
-        label="Features (one per line)"
-        value={typeof form.features === "string" ? form.features : stringifyFeatures(form.features)}
-        onChange={set("features")}
-        placeholder={"Level 60\nEVO Gun Max\n100+ Skins"}
-      />
-      <Toggle label="Sold Out" sub="Mark as sold — shows SOLD OUT button" checked={!!form.sold} onChange={set("sold")} />
-      <Toggle label="⭐ Featured" sub="Highlight this card in the shop" checked={!!form.featured} onChange={set("featured")} />
-      <Toggle label="🪟 Popup on Load" sub="Show this card as a popup when site opens" checked={!!form.popupFeatured} onChange={set("popupFeatured")} />
 
-      <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-        <button
-          type="submit"
-          disabled={saving}
-          style={{ flex: 1, background: saving ? "#334155" : "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "13px 0", fontWeight: 900, fontSize: 15, cursor: saving ? "not-allowed" : "pointer" }}
-        >
-          {saving ? "Saving…" : "💾 Save Card"}
-        </button>
+      {/* Toggles Panel */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 14 }}>
+        <Toggle label="Sold Out" sub="Mark as sold — shows SOLD OUT button" checked={!!form.sold} onChange={set("sold")} />
+        {/* <Toggle label="⭐ Featured" sub="Highlight this card in the shop" checked={!!form.featured} onChange={set("featured")} /> */}
+        <Toggle label="🪟 Popup on Load" sub="Show this card as a popup on entry" checked={!!form.popupFeatured} onChange={set("popupFeatured")} />
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
         <button
           type="button"
           onClick={onCancel}
-          style={{ flex: 1, background: "rgba(255,255,255,0.06)", color: "#94a3b8", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "13px 0", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+          style={{ background: "rgba(255,255,255,0.06)", color: "#94a3b8", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "12px 28px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
         >
           Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={saving}
+          style={{ background: saving ? "#334155" : "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 32px", fontWeight: 700, fontSize: 14, cursor: saving ? "not-allowed" : "pointer", boxShadow: "0 4px 12px rgba(0, 200, 83, 0.2)" }}
+        >
+          {saving ? "Saving…" : "💾 Save Card"}
         </button>
       </div>
     </form>
   );
 }
 
-// ── Main Admin ────────────────────────────────────────────────────────────────
+// ── Main Admin Component ──────────────────────────────────────────────────────
 export default function Admin() {
   const [authed, setAuthed] = useState(false);
   const [pwInput, setPwInput] = useState("");
@@ -142,19 +188,15 @@ export default function Admin() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
-  // null = list view | "add" = add form | cardId = edit form
   const [mode, setMode] = useState(null);
   const [editCard, setEditCard] = useState(null);
+  const [msg, setMsg] = useState(null);
 
-  const [msg, setMsg] = useState(null); // { text, ok }
-
-  // ── Payment Settings ──
   const [upiId, setUpiId] = useState("");
   const [qrUrl, setQrUrl] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState(null);
 
-  // ── Auth ──
   const handleLogin = (e) => {
     e.preventDefault();
     if (pwInput === ADMIN_PASSWORD) {
@@ -166,7 +208,6 @@ export default function Admin() {
     }
   };
 
-  // ── Fetch Cards ──
   const fetchCards = async () => {
     setLoadingCards(true);
     try {
@@ -176,7 +217,6 @@ export default function Admin() {
     setLoadingCards(false);
   };
 
-  // ── Fetch Payment Settings ──
   const fetchPaymentSettings = async () => {
     try {
       const snap = await getDoc(doc(db, "settings", "payment"));
@@ -184,7 +224,6 @@ export default function Admin() {
     } catch { }
   };
 
-  // ── Save Payment Settings ──
   const savePaymentSettings = async (e) => {
     e.preventDefault();
     setSavingSettings(true);
@@ -198,7 +237,6 @@ export default function Admin() {
     setTimeout(() => setSettingsMsg(null), 3000);
   };
 
-  // ── Add ──
   const handleAdd = async (data) => {
     setSaving(true);
     try {
@@ -212,7 +250,6 @@ export default function Admin() {
     setSaving(false);
   };
 
-  // ── Edit ──
   const handleEdit = async (data) => {
     setSaving(true);
     try {
@@ -227,7 +264,6 @@ export default function Admin() {
     setSaving(false);
   };
 
-  // ── Delete ──
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this card? This cannot be undone.")) return;
     setDeletingId(id);
@@ -241,172 +277,178 @@ export default function Admin() {
     setDeletingId(null);
   };
 
-  // Auto-clear message
   useEffect(() => {
     if (!msg) return;
     const t = setTimeout(() => setMsg(null), 3000);
     return () => clearTimeout(t);
   }, [msg]);
 
-  // ── Password screen ──────────────────────────────────────────────────────
   if (!authed) {
     return (
       <div style={{ minHeight: "100vh", background: "#0d0d2b", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-        <div style={{ width: "100%", maxWidth: 380, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(0,229,255,0.18)", borderRadius: 18, padding: 36, boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <div style={{ fontSize: 48, marginBottom: 10 }}>🛡️</div>
-            <h1 style={{ color: "#fff", fontWeight: 900, fontSize: 22, margin: 0 }}>Admin Dashboard</h1>
-            <p style={{ color: "#64748b", fontSize: 13, marginTop: 6 }}>Enter the password to continue</p>
+        <div style={{ width: "100%", maxWidth: 400, background: "#131338", border: "1px solid rgba(0,229,255,0.15)", borderRadius: 20, padding: 40, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ fontSize: 52, marginBottom: 12 }}>🛡️</div>
+            <h1 style={{ color: "#fff", fontWeight: 900, fontSize: 24, margin: 0 }}>Admin Dashboard</h1>
+            <p style={{ color: "#64748b", fontSize: 14, marginTop: 8 }}>Enter the password to access system controls</p>
           </div>
-          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <input
-              className="admin-input"
               type="password"
               value={pwInput}
               onChange={e => { setPwInput(e.target.value); setPwError(""); }}
-              placeholder="Password"
+              placeholder="••••••••••••"
               autoFocus
-              style={{ textAlign: "center", fontSize: 16, letterSpacing: "0.15em" }}
+              style={{ textAlign: "center", fontSize: 16, letterSpacing: "0.15em", width: "100%", padding: "14px", background: "#0d0d2b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#fff", outline: "none" }}
             />
             {pwError && <p style={{ color: "#ef4444", fontSize: 13, textAlign: "center", margin: 0 }}>{pwError}</p>}
             <button
               type="submit"
-              style={{ background: "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "13px 0", fontWeight: 900, fontSize: 15, cursor: "pointer" }}
+              style={{ background: "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "14px 0", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 12px rgba(0, 200, 83, 0.2)" }}
             >
-              🔓 Login
+              🔓 Access Dashboard
             </button>
           </form>
-          <p style={{ textAlign: "center", marginTop: 16, color: "#334155", fontSize: 12 }}>
-            <a href="/" style={{ color: "#00bcd4", textDecoration: "none" }}>← Back to Shop</a>
+          <p style={{ textAlign: "center", marginTop: 20, margin: 0 }}>
+            <a href="/" style={{ color: "#00bcd4", textDecoration: "none", fontSize: 13 }}>← Back to Shop</a>
           </p>
         </div>
       </div>
     );
   }
 
-  // ── Admin dashboard ──────────────────────────────────────────────────────
-  const panelStyle = { minHeight: "100vh", background: "#0d0d2b", padding: "24px 16px" };
-  const containerStyle = { maxWidth: 900, margin: "0 auto" };
-
   return (
-    <div style={panelStyle}>
-      <div style={containerStyle}>
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 32 }}>🛡️</span>
+    <div style={{ minHeight: "100vh", background: "#0d0d2b", padding: "40px 24px", boxSizing: "border-box" }}>
+      <div style={{ maxWidth: 1040, margin: "0 auto", display: "flex", flexDirection: "column", gap: 32 }}>
+
+        {/* Header Section */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <span style={{ fontSize: 36 }}>🛡️</span>
             <div>
-              <h1 style={{ color: "#fff", fontWeight: 900, fontSize: 22, margin: 0 }}>Admin Dashboard</h1>
-              <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>Manage all Free Fire account listings</p>
+              <h1 style={{ color: "#fff", fontWeight: 900, fontSize: 26, margin: 0 }}>Admin Panel</h1>
+              <p style={{ color: "#64748b", fontSize: 14, margin: "4px 0 0 0" }}>Manage listings, statuses, and pricing configurations</p>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             {mode === null && (
               <button
                 onClick={() => setMode("add")}
-                style={{ background: "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 800, fontSize: 14, cursor: "pointer" }}
+                style={{ background: "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 12px rgba(0, 200, 83, 0.2)" }}
               >
-                + Add Card
+                ＋ Add New Account
               </button>
             )}
-            <a href="/" style={{ color: "#00bcd4", fontSize: 13, textDecoration: "none" }}>← Shop</a>
+            <a href="/" style={{ color: "#00bcd4", fontSize: 14, textDecoration: "none", fontWeight: 500, padding: "8px 16px", background: "rgba(0,188,212,0.08)", borderRadius: 8, border: "1px solid rgba(0,188,212,0.15)" }}>← View Shop</a>
           </div>
         </div>
 
-        {/* Toast message */}
+        {/* Dynamic Toast Messages */}
         {msg && (
-          <div style={{ background: msg.ok ? "rgba(0,200,83,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${msg.ok ? "#00c853" : "#ef4444"}`, borderRadius: 10, padding: "12px 16px", marginBottom: 20, color: msg.ok ? "#00e676" : "#f87171", fontWeight: 700, fontSize: 14 }}>
+          <div style={{ background: msg.ok ? "rgba(0,200,83,0.1)" : "rgba(239,68,68,0.1)", border: `1px solid ${msg.ok ? "#00c853" : "#ef4444"}`, borderRadius: 10, padding: "14px 20px", color: msg.ok ? "#00e676" : "#f87171", fontWeight: 600, fontSize: 14 }}>
             {msg.text}
           </div>
         )}
 
-        {/* ── Add Form ── */}
+        {/* ── Add Card Workspace ── */}
         {mode === "add" && (
-          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: 24, marginBottom: 28 }}>
-            <h2 style={{ color: "#00e5ff", fontWeight: 800, fontSize: 17, marginTop: 0, marginBottom: 18 }}>➕ Add New Card</h2>
-            <CardForm
-              onSave={handleAdd}
-              onCancel={() => setMode(null)}
-              saving={saving}
-            />
+          <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 32, boxShadow: "0 12px 32px rgba(0,0,0,0.2)" }}>
+            <h2 style={{ color: "#00e5ff", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>➕ Create Listing Card</h2>
+            <CardForm onSave={handleAdd} onCancel={() => setMode(null)} saving={saving} />
           </div>
         )}
 
-        {/* ── Edit Form ── */}
+        {/* ── Edit Card Workspace ── */}
         {mode === "edit" && editCard && (
-          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: 24, marginBottom: 28 }}>
-            <h2 style={{ color: "#f9a825", fontWeight: 800, fontSize: 17, marginTop: 0, marginBottom: 18 }}>✏️ Edit Card</h2>
-            <CardForm
-              initial={{ ...editCard, features: stringifyFeatures(editCard.features) }}
-              onSave={handleEdit}
-              onCancel={() => { setMode(null); setEditCard(null); }}
-              saving={saving}
-            />
+          <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 32, boxShadow: "0 12px 32px rgba(0,0,0,0.2)" }}>
+            <h2 style={{ color: "#f9a825", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>✏️ Update Existing Card</h2>
+            <CardForm initial={{ ...editCard, features: stringifyFeatures(editCard.features) }} onSave={handleEdit} onCancel={() => { setMode(null); setEditCard(null); }} saving={saving} />
           </div>
         )}
 
-        {/* ── Card list ── */}
+        {/* ── Main Workspace List ── */}
         {mode === null && (
-          <>
-            <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-              <h2 style={{ color: "#94a3b8", fontWeight: 700, fontSize: 15, margin: 0 }}>
-                All Cards ({cards.length})
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Payment Sub-settings section built beautifully inside row spacing */}
+            <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 12 }}>
+                <h3 style={{ margin: 0, color: "#fff", fontSize: 16 }}>💳 Global Shop Payment Configurations</h3>
+              </div>
+              <form onSubmit={savePaymentSettings} style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+                <div style={{ flex: "2 1 280px" }}>
+                  <Input label="Shop Merchant UPI ID" value={upiId} onChange={setUpiId} placeholder="merchant@upi" />
+                </div>
+                <div style={{ flex: "2 1 280px" }}>
+                  <Input label="Static QR Code Asset URL" value={qrUrl} onChange={setQrUrl} placeholder="https://image-link-here.com/qr.png" />
+                </div>
+                <button type="submit" disabled={savingSettings} style={{ flex: "1 1 140px", height: 43, background: "#00bcd4", color: "#000", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                  {savingSettings ? "Updating..." : "Update Details"}
+                </button>
+              </form>
+              {settingsMsg && (
+                <span style={{ fontSize: 13, color: settingsMsg.ok ? "#00e676" : "#ef4444", fontWeight: 600 }}>{settingsMsg.text}</span>
+              )}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+              <h2 style={{ color: "#94a3b8", fontWeight: 700, fontSize: 16, margin: 0 }}>
+                Inventory Management Items ({cards.length})
               </h2>
-              <button onClick={fetchCards} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "5px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>
-                🔄 Refresh
+              <button onClick={fetchCards} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", color: "#94a3b8", fontSize: 13, cursor: "pointer", fontWeight: 500 }}>
+                🔄 Sync Records
               </button>
             </div>
 
             {loadingCards ? (
-              <div style={{ textAlign: "center", color: "#64748b", padding: 40 }}>Loading cards…</div>
+              <div style={{ textAlign: "center", color: "#64748b", padding: 60, background: "#131338", borderRadius: 16 }}>Syncing dataset collections...</div>
             ) : cards.length === 0 ? (
-              <div style={{ textAlign: "center", color: "#64748b", padding: 40 }}>No cards yet. Add your first one!</div>
+              <div style={{ textAlign: "center", color: "#64748b", padding: 60, background: "#131338", borderRadius: 16, border: "1px dashed rgba(255,255,255,0.1)" }}>No listing cards configured yet. Launch your first marketplace instance!</div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
                 {cards.map(card => (
                   <div
                     key={card.id}
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: 16, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}
+                    style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap", justifySelf: "stretch" }}
                   >
-                    {/* Thumbnail / placeholder */}
-                    <div style={{ width: 80, height: 50, borderRadius: 8, background: "#1e1e4a", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
+                    {/* Media Type indicator icon container */}
+                    <div style={{ width: 64, height: 64, borderRadius: 12, background: "#0d0d2b", border: "1px solid rgba(255,255,255,0.05)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
                       {card.videoUrl ? "🎬" : "🎮"}
                     </div>
 
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 150 }}>
-                      <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{card.title || "Untitled"}</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                        {card.badge && <span style={{ background: "#c62828", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 4, padding: "2px 7px" }}>{card.badge}</span>}
-                        {card.sold && <span style={{ background: "#424242", color: "#9e9e9e", fontSize: 10, fontWeight: 700, borderRadius: 4, padding: "2px 7px" }}>SOLD OUT</span>}
-                        {card.featured && <span style={{ background: "#f9a825", color: "#000", fontSize: 10, fontWeight: 700, borderRadius: 4, padding: "2px 7px" }}>⭐ FEATURED</span>}
-                        {card.popupFeatured && <span style={{ background: "#7b1fa2", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 4, padding: "2px 7px" }}>🪟 POPUP</span>}
-                        <span style={{ color: "#00c853", fontWeight: 800, fontSize: 13 }}>₹{card.price}</span>
-                        {card.oldPrice && <span style={{ color: "#64748b", textDecoration: "line-through", fontSize: 12 }}>₹{card.oldPrice}</span>}
+                    {/* Metadata summary context stack */}
+                    <div style={{ flex: "1 1 240px" }}>
+                      <div style={{ color: "#fff", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{card.title || "Untitled Card Component"}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+                        <span style={{ color: "#00c853", fontWeight: 800, fontSize: 15 }}>₹{card.price}</span>
+                        {card.oldPrice && <span style={{ color: "#64748b", textDecoration: "line-through", fontSize: 13, marginRight: 4 }}>₹{card.oldPrice}</span>}
+                        {card.badge && <span style={{ background: "#c62828", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 4, padding: "3px 8px", textTransform: "uppercase" }}>{card.badge}</span>}
+                        {card.sold && <span style={{ background: "#334155", color: "#94a3b8", fontSize: 10, fontWeight: 700, borderRadius: 4, padding: "3px 8px" }}>SOLD</span>}
+                        {card.featured && <span style={{ background: "rgba(249,168,37,0.15)", color: "#f9a825", border: "1px solid rgba(249,168,37,0.3)", fontSize: 10, fontWeight: 700, borderRadius: 4, padding: "2px 6px" }}>⭐ FEATURED</span>}
+                        {card.popupFeatured && <span style={{ background: "rgba(123,31,162,0.15)", color: "#ba68c8", border: "1px solid rgba(123,31,162,0.3)", fontSize: 10, fontWeight: 700, borderRadius: 4, padding: "2px 6px" }}>🪟 POPUP</span>}
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {/* Modification Trigger layout CTA element alignment panel */}
+                    <div style={{ display: "flex", gap: 10, flexShrink: 0, marginLeft: "auto" }}>
                       <button
                         onClick={() => { setEditCard(card); setMode("edit"); }}
-                        style={{ background: "linear-gradient(135deg,#1976d2,#1565c0)", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                        style={{ background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 20px", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "background 0.2s" }}
                       >
-                        ✏️ Edit
+                        ✏️ Edit Data
                       </button>
                       <button
                         onClick={() => handleDelete(card.id)}
                         disabled={deletingId === card.id}
-                        style={{ background: deletingId === card.id ? "#374151" : "linear-gradient(135deg,#c62828,#b71c1c)", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: deletingId === card.id ? "not-allowed" : "pointer" }}
+                        style={{ background: deletingId === card.id ? "#374151" : "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10, padding: "10px 20px", fontWeight: 600, fontSize: 13, cursor: deletingId === card.id ? "not-allowed" : "pointer" }}
                       >
-                        {deletingId === card.id ? "…" : "🗑 Delete"}
+                        {deletingId === card.id ? "Removing..." : "🗑 Remove"}
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>
