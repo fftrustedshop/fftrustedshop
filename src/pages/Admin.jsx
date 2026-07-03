@@ -3,6 +3,7 @@ import { db } from "../firebase/firebase";
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc,
 } from "firebase/firestore";
+import { getDirectImageLink, resizeAndCompressImage } from "../utils/helpers";
 
 // ── Password ──────────────────────────────────────────────────────────────────
 const ADMIN_PASSWORD = "fftrustedshop";
@@ -196,6 +197,8 @@ export default function Admin() {
   const [qrUrl, setQrUrl] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState(null);
+  const [uploadingQr, setUploadingQr] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -224,11 +227,35 @@ export default function Admin() {
     } catch { }
   };
 
+  const handleQrUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingQr(true);
+    setUploadProgress(0);
+
+    try {
+      setUploadProgress(25);
+      const base64Data = await resizeAndCompressImage(file, 300, 300);
+      setUploadProgress(75);
+      setQrUrl(base64Data);
+      setUploadProgress(100);
+      setSettingsMsg({ text: "✅ QR Code optimized & loaded! Click 'Save Payment Config' to save changes.", ok: true });
+    } catch (err) {
+      console.error("QR Code processing error:", err);
+      setSettingsMsg({ text: `❌ Processing failed: ${err.message || err}`, ok: false });
+    } finally {
+      setUploadingQr(false);
+    }
+  };
+
   const savePaymentSettings = async (e) => {
     e.preventDefault();
     setSavingSettings(true);
     try {
-      await setDoc(doc(db, "settings", "payment"), { upiId: upiId.trim(), qrUrl: qrUrl.trim() });
+      const cleanedQrUrl = getDirectImageLink(qrUrl);
+      await setDoc(doc(db, "settings", "payment"), { upiId: upiId.trim(), qrUrl: cleanedQrUrl });
+      setQrUrl(cleanedQrUrl);
       setSettingsMsg({ text: "✅ Payment settings saved!", ok: true });
     } catch {
       setSettingsMsg({ text: "❌ Failed to save settings.", ok: false });
@@ -372,30 +399,124 @@ export default function Admin() {
             {/* Payment Sub-settings section built beautifully inside row spacing */}
             <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 12 }}>
-                <h3 style={{ margin: 0, color: "#fff", fontSize: 16 }}>💳 Global Shop Payment Configurations</h3>
+                <h3 style={{ margin: 0, color: "#fff", fontSize: 16 }}>💳 Payment Configurations</h3>
               </div>
-              <form onSubmit={savePaymentSettings} style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
-                <div style={{ flex: "2 1 280px" }}>
-                  <Input label="Shop Merchant UPI ID" value={upiId} onChange={setUpiId} placeholder="merchant@upi" />
+              
+              <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                {/* Current QR Code Preview */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, padding: 16, width: 150, minWidth: 150, justifyContent: "center" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>QR Preview</div>
+                  {qrUrl ? (
+                    <img 
+                      src={getDirectImageLink(qrUrl)} 
+                      alt="QR Preview" 
+                      style={{ width: 100, height: 100, objectFit: "contain", borderRadius: 8, background: "#fff", padding: 4 }} 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E";
+                      }}
+                    />
+                  ) : (
+                    <div style={{ width: 100, height: 100, borderRadius: 8, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: 12, textAlign: "center", border: "1px dashed rgba(255,255,255,0.1)" }}>No QR Code</div>
+                  )}
                 </div>
-                <div style={{ flex: "2 1 280px" }}>
-                  <Input label="Static QR Code Asset URL" value={qrUrl} onChange={setQrUrl} placeholder="https://image-link-here.com/qr.png" />
-                </div>
-                <button type="submit" disabled={savingSettings} style={{ flex: "1 1 140px", height: 43, background: "#00bcd4", color: "#000", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                  {savingSettings ? "Updating..." : "Update Details"}
-                </button>
-              </form>
+
+                {/* Form Controls */}
+                <form onSubmit={savePaymentSettings} style={{ flex: "1 1 400px", display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+                    <Input label="Shop Merchant UPI ID" value={upiId} onChange={setUpiId} placeholder="merchant@upi" />
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                        QR Code URL (or upload below)
+                      </label>
+                      <input
+                        className="admin-input"
+                        type="text"
+                        value={qrUrl}
+                        onChange={e => setQrUrl(e.target.value)}
+                        placeholder="https://image-link-here.com/qr.png"
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          background: "#161b3d",
+                          border: "1px solid rgba(255, 255, 255, 0.1)",
+                          borderRadius: 10,
+                          color: "#fff",
+                          fontSize: 14,
+                          outline: "none",
+                          boxSizing: "border-box"
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                    {/* File Upload Trigger */}
+                    <div style={{ flex: "1 1 200px" }}>
+                      <label 
+                        style={{ 
+                          display: "inline-flex", 
+                          alignItems: "center", 
+                          justifyContent: "center", 
+                          gap: 8, 
+                          padding: "12px 16px", 
+                          background: uploadingQr ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.08)", 
+                          border: "1px solid rgba(255,255,255,0.1)", 
+                          borderRadius: 10, 
+                          color: uploadingQr ? "#64748b" : "#fff", 
+                          fontWeight: 600, 
+                          fontSize: 13, 
+                          cursor: uploadingQr ? "not-allowed" : "pointer",
+                          textAlign: "center",
+                          width: "100%",
+                          boxSizing: "border-box"
+                        }}
+                      >
+                        📁 {uploadingQr ? `Uploading (${uploadProgress}%)` : "Upload QR Image"}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleQrUpload} 
+                          disabled={uploadingQr} 
+                          style={{ display: "none" }} 
+                        />
+                      </label>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={savingSettings || uploadingQr} 
+                      style={{ 
+                        flex: "1 1 200px", 
+                        height: 42, 
+                        background: (savingSettings || uploadingQr) ? "#334155" : "#00bcd4", 
+                        color: "#000", 
+                        border: "none", 
+                        borderRadius: 10, 
+                        fontWeight: 700, 
+                        fontSize: 13, 
+                        cursor: (savingSettings || uploadingQr) ? "not-allowed" : "pointer",
+                        transition: "background 0.2s"
+                      }}
+                    >
+                      {savingSettings ? "Saving Settings..." : "💾 Save Payment Config"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
               {settingsMsg && (
-                <span style={{ fontSize: 13, color: settingsMsg.ok ? "#00e676" : "#ef4444", fontWeight: 600 }}>{settingsMsg.text}</span>
+                <div style={{ fontSize: 13, color: settingsMsg.ok ? "#00e676" : "#ef4444", fontWeight: 600 }}>{settingsMsg.text}</div>
               )}
             </div>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
               <h2 style={{ color: "#94a3b8", fontWeight: 700, fontSize: 16, margin: 0 }}>
-                Inventory Management Items ({cards.length})
+                Account Management
               </h2>
-              <button onClick={fetchCards} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", color: "#94a3b8", fontSize: 13, cursor: "pointer", fontWeight: 500 }}>
-                🔄 Sync Records
+              <button onClick={fetchCards} style={{ background: "rgba(12, 114, 187, 1)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", color: "white", fontSize: 15, cursor: "pointer", fontWeight: 500 }}>
+                🔄 Refresh
               </button>
             </div>
 

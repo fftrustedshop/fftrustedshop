@@ -10,7 +10,6 @@ const TAG_COLORS = [
   { bg: "#f57f17", text: "#000" },
   { bg: "#ad1457", text: "#fff" },
 ];
-const TAG_ICONS = ["♦", "⚡", "🔥", "💎", "✦", "🎯", "🏆"];
 
 function discount(price, oldPrice) {
   const p = parseFloat(price) || 0;
@@ -64,7 +63,7 @@ export default function Card({ id, title, videoUrl, badge, price, oldPrice, feat
                     className="px-2.5 py-1 rounded-full text-xs font-bold"
                     style={{ background: c.bg, color: c.text }}
                   >
-                    {TAG_ICONS[i % TAG_ICONS.length]} {feat}
+                    {feat}
                   </span>
                 );
               })}

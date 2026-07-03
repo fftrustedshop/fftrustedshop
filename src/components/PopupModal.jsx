@@ -8,7 +8,6 @@ const TAG_COLORS = [
   { bg: "#00695c", color: "#fff" },
   { bg: "#f57f17", color: "#000" },
 ];
-const TAG_ICONS = ["♦", "⚡", "🔥", "💎", "✦", "🎯"];
 
 export default function PopupModal({ card, onClose }) {
   const [visible, setVisible] = useState(false);
@@ -24,7 +23,7 @@ export default function PopupModal({ card, onClose }) {
   const waMessage = encodeURIComponent(
     `Hello! I want to buy:\n\n*${card.title || "Free Fire ID"}*\nPrice: ₹${card.price}\n\nPlease confirm availability.`
   );
-  const waLink = `https://wa.me/919999999999?text=${waMessage}`;
+  const waLink = `https://wa.me/917225023941?text=${waMessage}`;
 
   const discount =
     card.oldPrice && card.price && parseFloat(card.oldPrice) > parseFloat(card.price)
@@ -34,8 +33,8 @@ export default function PopupModal({ card, onClose }) {
   const ribbonLabel = card.badge
     ? card.badge.toUpperCase()
     : discount
-    ? `${discount}% OFF`
-    : "HOT DEAL";
+      ? `${discount}% OFF`
+      : "HOT DEAL";
 
   return (
     <div
@@ -57,15 +56,24 @@ export default function PopupModal({ card, onClose }) {
         <button
           onClick={onClose}
           className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center font-black text-white text-lg"
-          style={{ background: "rgba(0,0,0,0.6)" }}
           aria-label="Close"
         >
           ×
         </button>
 
         {/* Red ribbon */}
-        <div className="card-ribbon">{ribbonLabel}</div>
-
+        <div
+          className="py-2 px-3 text-center font-black text-sm text-white uppercase tracking-wider"
+          style={{ background: "linear-gradient(135deg,#e53935,#c62828)" }}
+        >
+          {card.price && (
+            <div className="flex flex-col items-center gap-2">
+              <span>TODAY'S BEST DEAL</span>
+              <span>₹{card.price}/- ONLY</span>
+              <span>{ribbonLabel}</span>
+            </div>
+          )}
+        </div>
         {/* Image / iframe */}
         <div className="relative w-full overflow-hidden" style={{ aspectRatio: "16/9" }}>
           {card.videoUrl ? (
@@ -93,7 +101,7 @@ export default function PopupModal({ card, onClose }) {
                 const c = TAG_COLORS[i % TAG_COLORS.length];
                 return (
                   <span key={i} className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: c.bg, color: c.color }}>
-                    {TAG_ICONS[i % TAG_ICONS.length]} {feat}
+                    {feat}
                   </span>
                 );
               })}
@@ -117,9 +125,14 @@ export default function PopupModal({ card, onClose }) {
               </span>
             )}
           </div>
-
-          <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn-buy" onClick={onClose}>
-            WATCH COLLECTION<br />BUY NOW
+          {/* 
+          <a href={waLink} target="_blank" rel="noopener noreferrer">
+            <div
+              className="w-full flex items-center justify-center py-3 rounded-xl font-black text-sm text-white uppercase tracking-wider leading-tight hover:opacity-90 hover:scale-[1.02] transition-all"
+              style={{ background: "linear-gradient(135deg,#1976d2,#1565c0)", boxShadow: "0 4px 16px rgba(25,118,210,0.4)" }}
+            >
+              BUY NOW
+            </div>
           </a>
 
           <button
@@ -127,7 +140,7 @@ export default function PopupModal({ card, onClose }) {
             className="mt-3 w-full text-center text-gray-400 text-sm hover:text-gray-600 transition-colors"
           >
             No thanks, continue browsing
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

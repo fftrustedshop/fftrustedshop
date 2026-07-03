@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   const year = new Date().getFullYear();
-  const waLink = "https://wa.me/918368905639?text=Hello!%20I%20want%20to%20buy%20a%20Free%20Fire%20ID";
+  const waLink = "https://wa.me/917225023941";
 
   return (
     <footer
@@ -39,7 +39,6 @@ export default function Footer() {
                   {l.label}
                 </button>
               ))}
-              <Link to="/admin" style={{ color: "#64748b", fontSize: 13, textDecoration: "none" }}>🛡️ Admin</Link>
             </div>
           </div>
 

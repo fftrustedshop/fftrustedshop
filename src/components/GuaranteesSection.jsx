@@ -38,8 +38,7 @@ export default function GuaranteesSection() {
                 key={g.title}
                 className="bg-white rounded-xl p-6 text-center shadow-md hover:-translate-y-1 transition-transform duration-300"
               >
-                <div className="text-4xl mb-3">{g.icon}</div>
-                <h3 className={`font-bold text-lg mb-2 ${g.color}`}>{g.title}</h3>
+                <h3 className={`font-bold text-lg mb-2 ${g.color}`}>{g.icon} {g.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{g.desc}</p>
               </div>
             ))}

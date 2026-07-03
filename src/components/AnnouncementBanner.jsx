@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
 export default function AnnouncementBanner() {
-  // Countdown: 12 hours, 7 minutes, 36 seconds (matching the screenshot)
   const [timeLeft, setTimeLeft] = useState((12 * 3600) + (7 * 60) + 36);
 
   useEffect(() => {
@@ -27,7 +26,7 @@ export default function AnnouncementBanner() {
 
   return (
     /* Top-level Layout Wrapper to replicate placement/inset from the screenshot */
-    <div style={{ width: "100%", padding: "20px 0", display: "flex", justifyContent: "center", background: "transparent" }}>
+    <div style={{ fontFamily: "Arial", width: "100%", padding: "20px 0 0 0", display: "flex", justifyContent: "center", background: "transparent" }}>
       <div
         className="w-full flex items-center justify-between gap-6 px-8 py-3 overflow-hidden"
         style={{
@@ -38,7 +37,6 @@ export default function AnnouncementBanner() {
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.05)",
           minHeight: "72px",
           boxSizing: "border-box",
-          margin: "0 16px"
         }}
       >
         {/* Scrolling Ticker with Glowing Text Effects */}
@@ -62,7 +60,8 @@ export default function AnnouncementBanner() {
             borderRadius: "12px",
             background: "linear-gradient(135deg, rgba(0, 229, 255, 0.6), rgba(0, 229, 255, 0.15))",
             boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
-            flexShrink: 0
+            flexShrink: 0,
+            animation: "pulseGlow 2.5s ease-in-out infinite"
           }}
         >
           <div
@@ -84,6 +83,21 @@ export default function AnnouncementBanner() {
           </div>
         </div>
       </div>
+      <style>
+        {`@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(0,229,255,0.25);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.09);
+    box-shadow: 0 0 20px rgba(0,229,255,0.45);
+  }
+}`}
+      </style>
     </div>
   );
 }

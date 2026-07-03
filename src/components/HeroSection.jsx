@@ -42,7 +42,7 @@ export default function HeroSection() {
         </h1>
 
         {/* Badges */}
-        <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+        <div className="grid grid-cols-2 gap-3 max-w-full lg:max-w-[60%] mx-auto">
           {badges.map((b, index) => (
             <button
               key={b.text}
@@ -52,7 +52,7 @@ export default function HeroSection() {
                          px-3 sm:px-4
                          rounded-xl
                          font-bold
-                         text-[11px] sm:text-sm
+                         text-[13px] sm:text-md
                          text-white
                          transition-all
                          duration-300

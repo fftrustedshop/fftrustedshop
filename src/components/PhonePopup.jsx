@@ -52,9 +52,6 @@ export default function PhonePopup({ card, onClose }) {
             Phone Number
           </label>
           <div className="flex gap-2 mb-2">
-            <span className="flex items-center px-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-bold text-sm flex-shrink-0">
-              +91
-            </span>
             <input
               type="tel"
               value={phone}
