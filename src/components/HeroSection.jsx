@@ -1,8 +1,4 @@
 export default function HeroSection() {
-  const handleShopNow = () => {
-    document.getElementById("accounts")?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const badges = [
     { icon: "✓", text: "VERIFIED SELLER" },
     { icon: "🛡", text: "100% SECURE" },
@@ -11,7 +7,7 @@ export default function HeroSection() {
   ];
 
   return (
-    <section className="px-4 pt-4 pb-8 bg-[#1a1a3e]">
+    <section className="px-4 pt-4 bg-[#1a1a3e]">
       <div className="mx-auto text-center ">
 
         {/* NOW LIVE pill */}
@@ -46,7 +42,6 @@ export default function HeroSection() {
           {badges.map((b, index) => (
             <button
               key={b.text}
-              onClick={handleShopNow}
               className="flex items-center justify-center gap-2
                          py-3 sm:py-3.5
                          px-3 sm:px-4

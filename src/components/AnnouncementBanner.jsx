@@ -43,11 +43,10 @@ export default function AnnouncementBanner() {
   const text = items.join("   |   ");
 
   return (
-    <div style={{ fontFamily: "Arial", width: "100%", padding: "20px 0 0 0", display: "flex", justifyContent: "center", background: "transparent" }}>
+    <div style={{ fontFamily: "Tiro Devanagari Hindi", width: "100%", padding: "20px 0 0 0", display: "flex", justifyContent: "center", background: "transparent" }}>
       <div
-        className="w-full flex items-center justify-between gap-6 px-8 py-3 overflow-hidden"
+        className="w-full max-w-4xl flex items-center justify-between mx-1 pr-2 py-3 overflow-hidden"
         style={{
-          maxWidth: "760px",
           background: "rgba(11, 12, 34, 0.75)",
           border: "1px solid rgba(0, 229, 255, 0.25)",
           borderRadius: "14px",
@@ -59,41 +58,42 @@ export default function AnnouncementBanner() {
         {/* Scrolling Ticker with Glowing Text Effects */}
         <div className="flex-1 overflow-hidden relative flex items-center">
           <div
-            className="animate-marquee whitespace-nowrap font-black text-sm sm:text-base tracking-wider uppercase"
+            className="animate-marquee whitespace-nowrap text-[18px] uppercase"
             style={{
-              color: "#ffea00",
-              textShadow: "0 0 10px rgba(255, 234, 0, 0.6), 0 0 2px rgba(255, 234, 0, 0.3)"
+              color: "#e8d502ff",
+              textShadow: "0 0 25px rgba(255, 234, 0, 0.6), 0 0 25px rgba(255, 234, 0, 0.3)",
+              backgroundColor: "rgba(255, 234, 0, 0.23)",
             }}
           >
-            <span className="inline-block pr-16">{text}</span>
-            <span className="inline-block pr-16">{text}</span>
+            <span className="inline-block font-semibold">{text}</span>
+            <span className="inline-block font-semibold">{text}</span>
           </div>
         </div>
 
         {/* Glowing Cyberpunk Digital Timer Panel */}
         <div
           style={{
-            padding: "2px",
             borderRadius: "12px",
-            background: "linear-gradient(135deg, rgba(0, 229, 255, 0.6), rgba(0, 229, 255, 0.15))",
+            background: "linear-gradient(135deg, #3b87ebff,#194da1ff)",
             boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
             flexShrink: 0,
             animation: "pulseGlow 2.5s ease-in-out infinite"
           }}
         >
           <div
-            className="font-mono font-black text-lg sm:text-xl px-4 py-1.5 rounded-[9px] select-none"
+            className="font-black text-2xl rounded-[9px] select-none"
             style={{
-              background: "linear-gradient(180deg, #040a17 0%, #081226 100%)",
+              background: "linear-gradient(200deg, #13398aff 0%, #091832ff 100%)",
+              border: "1px solid #17cdffff",
               color: "#00e5ff",
-              letterSpacing: "0.08em",
-              textShadow: "0 0 10px rgba(0, 229, 255, 0.6)",
+              textShadow: "0 0 25px rgba(0, 229, 255, 0.69)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               minWidth: "125px",
-              height: "40px",
+              height: "46px",
               boxSizing: "border-box",
+              fontFamily: "monospace",
               boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
             }}
           >

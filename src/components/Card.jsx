@@ -2,7 +2,7 @@ import { useState } from "react";
 import PhonePopup from "./PhonePopup";
 
 const TAG_COLORS = [
-  { bg: "rgba(123, 31, 162, 0.15)", text: "#ba68c8", border: "rgba(123, 31, 162, 0.4)" },
+  { bg: "rgba(123, 31, 162, 0.15)", text: "#d738faff", border: "rgba(184, 31, 239, 0.4)" },
   { bg: "rgba(229, 57, 53, 0.15)", text: "#ef5350", border: "rgba(229, 57, 53, 0.4)" },
   { bg: "rgba(230, 81, 0, 0.15)", text: "#ff9800", border: "rgba(230, 81, 0, 0.4)" },
   { bg: "rgba(21, 101, 192, 0.15)", text: "#42a5f5", border: "rgba(21, 101, 192, 0.4)" },
@@ -76,7 +76,7 @@ export default function Card({ id, title, videoUrl, badge, price, oldPrice, feat
         </div>
 
         {/* Card Body Info Wrapper */}
-        <div className="p-5 flex flex-col flex-1 justify-between gap-4 w-full">
+        <div className="p-5 flex flex-col flex-1 justify-between gap-4 w-full" style={{ background: "linear-gradient(#1a0a5bff, #0259fcff)" }}>
           <div>
             {/* Feature pill lists configured as neon micro badges */}
             {features && features.length > 0 && (
@@ -98,7 +98,7 @@ export default function Card({ id, title, videoUrl, badge, price, oldPrice, feat
 
             {/* Account Description Title */}
             {title && (
-              <p className="font-bold text-sm leading-snug line-clamp-2 uppercase tracking-wide text-white" style={{ textShadow: "0 0 25px rgba(0, 229, 255, 0.45)" }}>
+              <p className="font-bold text-[15px] leading-snug line-clamp-2 uppercase tracking-wide text-white" style={{ textShadow: "0 0 25px rgba(0, 229, 255, 0.45)" }}>
                 {title}
               </p>
             )}
@@ -106,19 +106,19 @@ export default function Card({ id, title, videoUrl, badge, price, oldPrice, feat
 
           <div>
             {/* Pricing Panel */}
-            <div className="flex bg-transparent items-center gap-3 mb-4 flex-wrap bg-black/40 p-3 rounded-xl border border-white/5 w-full">
-              <div className="flex flex-col">
-                {oldPrice && <span className="text-gray-500 line-through text-xs font-semibold">₹{oldPrice}</span>}
-                <span className="text-white font-black text-2xl tracking-tight">
-                  ₹{price}
+            <div className="flex bg-transparent items-center gap-3 mb-4 flex-wrap bg-black/40 px-2 rounded-xl border border-white/5 w-full">
+              <div>
+                <span className="text-yellow-300 font-black text-2xl tracking-tight mr-4">
+                  ₹{price}/-
                 </span>
+                {oldPrice && disc && <span className="text-red-500 line-through text-xs font-semibold">₹{oldPrice}/-</span>}
               </div>
               {disc && (
                 <span
                   className="ml-auto text-xs font-black px-2.5 py-1 rounded border"
                   style={{
                     background: "rgba(0, 200, 83, 0.1)",
-                    color: "#00e676",
+                    color: "#00ff37ff",
                     borderColor: "rgba(0, 200, 83, 0.3)",
                     textShadow: "0 0 6px rgba(0, 230, 118, 0.4)"
                   }}
@@ -132,18 +132,18 @@ export default function Card({ id, title, videoUrl, badge, price, oldPrice, feat
             {sold ? (
               <button
                 disabled
-                className="w-full py-3.5 rounded-xl font-black text-sm uppercase tracking-widest bg-[#222] text-gray-600 border border-gray-800 cursor-not-allowed"
+                className="w-full py-2.5 rounded-xl font-black text-lg uppercase tracking-widest bg-[#222] text-gray-600 border border-gray-800 cursor-not-allowed"
               >
                 SOLD OUT
               </button>
             ) : (
               <button
                 onClick={() => setShowPopup(true)}
-                className="w-full py-3.5 rounded-xl font-black text-sm text-white uppercase tracking-widest transition-all duration-200 hover:scale-[1.02]"
+                className="w-full py-2.5 rounded-xl font-black text-lg text-white uppercase tracking-widest transition-all duration-200 hover:scale-[1.08]"
                 style={{
-                  background: "linear-gradient(135deg, #ff1744, #b71c1c)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  boxShadow: "0 4px 14px rgba(255, 23, 68, 0.4)"
+                  background: "linear-gradient(135deg, #06abfdff,#9e56eef0)",
+                  border: "1px solid rgba(12, 229, 244, 0.93)",
+                  boxShadow: "0 4px 14px #1976d2"
                 }}
               >
                 BUY NOW!

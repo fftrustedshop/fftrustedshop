@@ -23,7 +23,7 @@ export default function FloatingButtons() {
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 group"
+        className="fixed bottom-3 right-3 z-50 group"
         aria-label="Customer Support"
       >
         <div
@@ -67,7 +67,7 @@ export default function FloatingButtons() {
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Scroll to top"
-          className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-lg hover:scale-110 transition-all duration-300"
+          className="fixed bottom-3 left-3 z-50 w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-lg hover:scale-110 transition-all duration-300"
           style={{
             background: "linear-gradient(135deg,#f9a825,#e65100)",
             boxShadow: "0 0 18px rgba(249,168,37,0.5)",
