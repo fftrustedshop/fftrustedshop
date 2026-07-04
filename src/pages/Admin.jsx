@@ -627,7 +627,7 @@ export default function Admin() {
 
         {/* ── Edit Workspace ── */}
         {mode === "edit" && (
-          <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 32, boxShadow: "0 12px 32px rgba(0,0,0,0.2)" }}>
+          <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 8, boxShadow: "0 12px 32px rgba(0,0,0,0.2)" }}>
             {activeTab === "listings" && editCard ? (
               <>
                 <h2 style={{ color: "#f9a825", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>✏️ Update Existing Card</h2>
