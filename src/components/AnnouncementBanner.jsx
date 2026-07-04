@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { db } from "../firebase/firebase";
+import { collection, getDocs, query, orderBy, addDoc } from "firebase/firestore";
 
 export default function AnnouncementBanner() {
   // Function to calculate seconds remaining until the next 12-hour block (12:00 AM or 12:00 PM)
@@ -17,6 +19,8 @@ export default function AnnouncementBanner() {
   };
 
   const [timeLeft, setTimeLeft] = useState(getSecondsToNext12Hours());
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -26,21 +30,59 @@ export default function AnnouncementBanner() {
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    async function fetchAnnouncements() {
+      try {
+        const q = query(collection(db, "Announcements"), orderBy("createdAt", "asc"));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          const seeded = [];
+          const now = Date.now();
+          const STATIC_ANNOUNCEMENTS = [
+            "💎 Huge Discounts Available",
+            "⚡ Instant Delivery",
+            "🚀 Limited Time Offer",
+            "⭐⭐⭐⭐⭐ 4.9/5 Customer Rating",
+            "🔥 1000+ Happy Customers",
+            "🛡️ 100% Secure Transactions",
+            "💰 Lowest Prices Guaranteed",
+          ];
+          for (let i = 0; i < STATIC_ANNOUNCEMENTS.length; i++) {
+            const textVal = STATIC_ANNOUNCEMENTS[i];
+            const data = {
+              text: textVal,
+              createdAt: now + i * 1000
+            };
+            await addDoc(collection(db, "Announcements"), data);
+            seeded.push(textVal);
+          }
+          setAnnouncements(seeded);
+        } else {
+          setAnnouncements(snap.docs.map(d => d.data().text));
+        }
+      } catch (e) {
+        console.error("Firestore announcements error:", e);
+        setAnnouncements([
+          "💎 Huge Discounts Available",
+          "⚡ Instant Delivery",
+          "🚀 Limited Time Offer",
+          "⭐⭐⭐⭐⭐ 4.9/5 Customer Rating",
+          "🔥 1000+ Happy Customers",
+          "🛡️ 100% Secure Transactions",
+          "💰 Lowest Prices Guaranteed",
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAnnouncements();
+  }, []);
+
   const hh = String(Math.floor(timeLeft / 3600)).padStart(2, "0");
   const mm = String(Math.floor((timeLeft % 3600) / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
 
-  const items = [
-    "💎 Huge Discounts Available",
-    "⚡ Instant Delivery",
-    "🚀 Limited Time Offer",
-    "⭐⭐⭐⭐⭐ 4.9/5 Customer Rating",
-    "🔥 1000+ Happy Customers",
-    "🛡️ 100% Secure Transactions",
-    "💰 Lowest Prices Guaranteed",
-  ];
-
-  const text = items.join("   |   ");
+  const text = announcements.join("   |   ");
 
   return (
     <div style={{ fontFamily: "Tiro Devanagari Hindi", width: "100%", padding: "20px 0 0 0", display: "flex", justifyContent: "center", background: "transparent" }}>
@@ -57,17 +99,21 @@ export default function AnnouncementBanner() {
       >
         {/* Scrolling Ticker with Glowing Text Effects */}
         <div className="flex-1 overflow-hidden relative flex items-center">
-          <div
-            className="animate-marquee whitespace-nowrap text-[18px] uppercase"
-            style={{
-              color: "#e8d502ff",
-              textShadow: "0 0 25px rgba(255, 234, 0, 0.6), 0 0 25px rgba(255, 234, 0, 0.3)",
-              backgroundColor: "rgba(255, 234, 0, 0.23)",
-            }}
-          >
-            <span className="inline-block font-semibold">{text}</span>
-            <span className="inline-block font-semibold">{text}</span>
-          </div>
+          {loading ? (
+            <div className="text-white/60 text-sm pl-4">Loading updates...</div>
+          ) : (
+            <div
+              className="animate-marquee whitespace-nowrap text-[18px] uppercase"
+              style={{
+                color: "#e8d502ff",
+                textShadow: "0 0 25px rgba(255, 234, 0, 0.6), 0 0 25px rgba(255, 234, 0, 0.3)",
+                backgroundColor: "rgba(255, 234, 0, 0.23)",
+              }}
+            >
+              <span className="inline-block font-semibold">{text}</span>
+              <span className="inline-block font-semibold">{text}</span>
+            </div>
+          )}
         </div>
 
         {/* Glowing Cyberpunk Digital Timer Panel */}

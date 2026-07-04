@@ -13,7 +13,6 @@ import GuaranteesSection from "../components/GuaranteesSection";
 import CustomerSupport from "../components/CustomerSupport";
 import PopupModal from "../components/PopupModal";
 import FloatingButtons from "../components/ScrollToTop";
-import Footer from "../components/Footer";
 
 export default function Home() {
   const [accounts, setAccounts] = useState([]);
@@ -81,8 +80,6 @@ export default function Home() {
       <section id="support">
         <CustomerSupport />
       </section>
-
-      <Footer />
       <FloatingButtons />
     </div>
   );
