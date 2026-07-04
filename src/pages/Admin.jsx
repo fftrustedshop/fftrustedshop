@@ -99,7 +99,7 @@ export default function Admin() {
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d2b", padding: "60px 24px", boxSizing: "border-box", fontFamily: "sans-serif" }}>
       <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", flexDirection: "column", gap: 40 }}>
-        
+
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 24, flexWrap: "wrap", gap: 16 }}>
           <div>
@@ -142,38 +142,22 @@ export default function Admin() {
                 overflow: "hidden"
               }}
             >
-              <div
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
-                  background: item.color,
-                  boxShadow: `0 8px 20px ${item.shadow}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 24,
-                  color: "#fff"
-                }}
-              >
-                {item.title.substring(0, 2)}
-              </div>
               <div>
                 <h3 style={{ color: "#fff", margin: "12px 0 6px 0", fontSize: 18, fontWeight: 700 }}>
-                  {item.title.substring(3)}
+                  {item.title}
                 </h3>
                 <p style={{ color: "#94a3b8", margin: 0, fontSize: 14, lineHeight: "1.5" }}>
                   {item.desc}
                 </p>
               </div>
-              
+
               {/* Dynamic hover overlay border */}
               <div className="card-hover-border" />
             </Link>
           ))}
         </div>
       </div>
-      
+
       {/* Styles for hover effect */}
       <style>
         {`
