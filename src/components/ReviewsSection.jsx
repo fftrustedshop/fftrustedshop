@@ -1,4 +1,8 @@
-const REVIEWS = [
+import { useState, useEffect } from "react";
+import { db } from "../firebase/firebase";
+import { collection, getDocs, query, orderBy, addDoc } from "firebase/firestore";
+
+const STATIC_REVIEWS = [
   {
     name: "Aman Singh",
     stars: 5,
@@ -72,6 +76,43 @@ function Stars({ count }) {
 }
 
 export default function ReviewsSection() {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadReviews() {
+      try {
+        const q = query(collection(db, "Reviews"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          const seeded = [];
+          const now = Date.now();
+          for (let i = 0; i < STATIC_REVIEWS.length; i++) {
+            const r = STATIC_REVIEWS[i];
+            const data = {
+              name: r.name,
+              stars: r.stars,
+              text: r.text,
+              time: r.time,
+              createdAt: now - i * 60000
+            };
+            const docRef = await addDoc(collection(db, "Reviews"), data);
+            seeded.push({ id: docRef.id, ...data });
+          }
+          setReviews(seeded);
+        } else {
+          setReviews(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        }
+      } catch (e) {
+        console.error("Firestore reviews error, falling back to static:", e);
+        setReviews(STATIC_REVIEWS.map((r, i) => ({ id: `static-${i}`, ...r })));
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadReviews();
+  }, []);
+
   return (
     <section className="bg-[#1a1a3e] px-4 pb-8">
       <div className="max-w-6xl mx-auto">
@@ -90,18 +131,22 @@ export default function ReviewsSection() {
         </div>
 
         {/* Review cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {REVIEWS.map(r => (
-            <div key={r.name + r.time} className="bg-white rounded-xl px-5 py-4 shadow-md" style={{
-              boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
-            }}>
-              <p className="font-bold text-gray-900 text-sm mb-1">{r.name} ✓</p>
-              <Stars count={r.stars} />
-              <p className="text-gray-700 text-sm leading-relaxed mb-1.5">{r.text}</p>
-              <p className="text-gray-400 text-xs">{r.time}</p>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center text-white/60 py-10">Loading reviews...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {reviews.map(r => (
+              <div key={r.id || r.name + r.time} className="bg-white rounded-xl px-5 py-4 shadow-md" style={{
+                boxShadow: "0 0 25px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2)",
+              }}>
+                <p className="font-bold text-gray-900 text-sm mb-1">{r.name} ✓</p>
+                <Stars count={r.stars} />
+                <p className="text-gray-700 text-sm leading-relaxed mb-1.5">{r.text}</p>
+                <p className="text-gray-400 text-xs">{r.time}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

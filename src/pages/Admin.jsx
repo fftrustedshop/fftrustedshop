@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "../firebase/firebase";
 import {
-  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc,
+  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, query, orderBy,
 } from "firebase/firestore";
 import { getDirectImageLink, resizeAndCompressImage } from "../utils/helpers";
 
@@ -106,6 +106,102 @@ function stringifyFeatures(arr) {
   return Array.isArray(arr) ? arr.join("\n") : (arr || "");
 }
 
+const EMPTY_REVIEW = { name: "", stars: 5, text: "", time: "" };
+
+function formatReviewTime(date = new Date()) {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
+  return `Today | ${displayHours}:${displayMinutes} ${ampm}`;
+}
+
+function ReviewForm({ initial, onSave, onCancel, saving }) {
+  const [form, setForm] = useState(() => {
+    if (initial) return initial;
+    return { ...EMPTY_REVIEW, time: formatReviewTime() };
+  });
+
+  const set = (k) => (v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) return alert("Name is required");
+    if (!form.text.trim()) return alert("Review text is required");
+    onSave({
+      name: form.name.trim(),
+      stars: Number(form.stars),
+      text: form.text.trim(),
+      time: form.time.trim() || formatReviewTime(),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+        <div style={{ gridColumn: "1 / -1" }}>
+          <Input label="Customer Name *" value={form.name} onChange={set("name")} placeholder="e.g. Aman Singh" />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Rating (Stars) *
+          </label>
+          <select
+            value={form.stars}
+            onChange={e => set("stars")(Number(e.target.value))}
+            style={{
+              width: "100%",
+              padding: "12px 16px",
+              background: "#161b3d",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: 10,
+              color: "#fff",
+              fontSize: 14,
+              outline: "none",
+              boxSizing: "border-box"
+            }}
+          >
+            {[5, 4, 3, 2, 1].map(n => (
+              <option key={n} value={n} style={{ background: "#131338", color: "#fff" }}>
+                {n} ★
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <Input label="Display Time (e.g. 'Today | 3:42 PM')" value={form.time} onChange={set("time")} placeholder="e.g. Today | 3:42 PM" />
+
+        <Textarea
+          label="Review Text *"
+          value={form.text}
+          onChange={set("text")}
+          placeholder="Enter what customer said..."
+          gridSpan="1 / -1"
+        />
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          style={{ background: "rgba(255,255,255,0.06)", color: "#94a3b8", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "12px 28px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={saving}
+          style={{ background: saving ? "#334155" : "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 32px", fontWeight: 700, fontSize: 14, cursor: saving ? "not-allowed" : "pointer", boxShadow: "0 4px 12px rgba(0, 200, 83, 0.2)" }}
+        >
+          {saving ? "Saving…" : "💾 Save Review"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ── Card Form Component ────────────────────────────────────────────────────────
 function CardForm({ initial, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initial || EMPTY_FORM);
@@ -184,10 +280,16 @@ export default function Admin() {
   const [pwInput, setPwInput] = useState("");
   const [pwError, setPwError] = useState("");
 
+  const [activeTab, setActiveTab] = useState("listings"); // "listings" or "reviews"
+
   const [cards, setCards] = useState([]);
   const [loadingCards, setLoadingCards] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [editReview, setEditReview] = useState(null);
 
   const [mode, setMode] = useState(null);
   const [editCard, setEditCard] = useState(null);
@@ -206,6 +308,7 @@ export default function Admin() {
       setAuthed(true);
       fetchCards();
       fetchPaymentSettings();
+      fetchReviews();
     } else {
       setPwError("❌ Wrong password. Try again.");
     }
@@ -218,6 +321,48 @@ export default function Admin() {
       setCards(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch { }
     setLoadingCards(false);
+  };
+
+  const fetchReviews = async () => {
+    setLoadingReviews(true);
+    try {
+      const q = query(collection(db, "Reviews"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        const seeded = [];
+        const now = Date.now();
+        const STATIC_REVIEWS = [
+          { name: "Aman Singh", stars: 5, text: "Received my account within minutes. Everything was exactly as described. Great experience!", time: "Today | 3:42 PM" },
+          { name: "Priyanshu Kumar", stars: 5, text: "Amazing seller! Login worked perfectly and support replied instantly. Highly recommended.", time: "Today | 2:18 PM" },
+          { name: "Rohit Patel", stars: 5, text: "Bought a premium account at a very good price. Delivery was super fast.", time: "Today | 1:07 PM" },
+          { name: "Aditya Sharma", stars: 5, text: "Everything went smoothly. Secure payment and genuine account. Will buy again.", time: "Today | 12:26 PM" },
+          { name: "Harsh Gupta", stars: 4, text: "Delivery took a few extra minutes but the account was exactly as promised.", time: "Today | 11:54 AM" },
+          { name: "Nikhil Verma", stars: 5, text: "Best prices I've found so far. Genuine seller and quick response on WhatsApp.", time: "Today | 10:39 AM" },
+          { name: "Deepak Yadav", stars: 5, text: "Account had all the listed items. Very satisfied with the purchase.", time: "Today | 9:58 AM" },
+          { name: "Arjun Mehta", stars: 4, text: "Excellent service! The account was delivered almost instantly after payment.", time: "Yesterday | 8:41 PM" },
+          { name: "Vivek Mishra", stars: 5, text: "Customer support was very helpful and guided me through the login process.", time: "Yesterday | 6:15 PM" },
+          { name: "Karan Joshi", stars: 4, text: "Trusted seller. This was my second purchase and both orders were perfect.", time: "Yesterday | 4:33 PM" }
+        ];
+        for (let i = 0; i < STATIC_REVIEWS.length; i++) {
+          const r = STATIC_REVIEWS[i];
+          const data = {
+            name: r.name,
+            stars: r.stars,
+            text: r.text,
+            time: r.time,
+            createdAt: now - i * 60000
+          };
+          const docRef = await addDoc(collection(db, "Reviews"), data);
+          seeded.push({ id: docRef.id, ...data });
+        }
+        setReviews(seeded);
+      } else {
+        setReviews(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setLoadingReviews(false);
   };
 
   const fetchPaymentSettings = async () => {
@@ -304,6 +449,46 @@ export default function Admin() {
     setDeletingId(null);
   };
 
+  const handleAddReview = async (data) => {
+    setSaving(true);
+    try {
+      await addDoc(collection(db, "Reviews"), { ...data, createdAt: Date.now() });
+      setMsg({ text: "✅ Review added!", ok: true });
+      setMode(null);
+      fetchReviews();
+    } catch {
+      setMsg({ text: "❌ Failed to add review.", ok: false });
+    }
+    setSaving(false);
+  };
+
+  const handleEditReview = async (data) => {
+    setSaving(true);
+    try {
+      await updateDoc(doc(db, "Reviews", editReview.id), data);
+      setMsg({ text: "✅ Review updated!", ok: true });
+      setMode(null);
+      setEditReview(null);
+      fetchReviews();
+    } catch {
+      setMsg({ text: "❌ Failed to update review.", ok: false });
+    }
+    setSaving(false);
+  };
+
+  const handleDeleteReview = async (id) => {
+    if (!window.confirm("Delete this review? This cannot be undone.")) return;
+    setDeletingId(id);
+    try {
+      await deleteDoc(doc(db, "Reviews", id));
+      setMsg({ text: "✅ Review deleted!", ok: true });
+      setReviews(prev => prev.filter(r => r.id !== id));
+    } catch {
+      setMsg({ text: "❌ Failed to delete review.", ok: false });
+    }
+    setDeletingId(null);
+  };
+
   useEffect(() => {
     if (!msg) return;
     const t = setTimeout(() => setMsg(null), 3000);
@@ -358,12 +543,20 @@ export default function Admin() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            {mode === null && (
+            {mode === null && activeTab === "listings" && (
               <button
                 onClick={() => setMode("add")}
                 style={{ background: "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 12px rgba(0, 200, 83, 0.2)" }}
               >
                 ＋ Add New Account
+              </button>
+            )}
+            {mode === null && activeTab === "reviews" && (
+              <button
+                onClick={() => setMode("add")}
+                style={{ background: "linear-gradient(135deg,#00c853,#00897b)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 12px rgba(0, 200, 83, 0.2)" }}
+              >
+                ＋ Add New Review
               </button>
             )}
             <a href="/" style={{ color: "#00bcd4", fontSize: 14, textDecoration: "none", fontWeight: 500, padding: "8px 16px", background: "rgba(0,188,212,0.08)", borderRadius: 8, border: "1px solid rgba(0,188,212,0.15)" }}>← View Shop</a>
@@ -377,40 +570,96 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ── Add Card Workspace ── */}
-        {mode === "add" && (
-          <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 32, boxShadow: "0 12px 32px rgba(0,0,0,0.2)" }}>
-            <h2 style={{ color: "#00e5ff", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>➕ Create Listing Card</h2>
-            <CardForm onSave={handleAdd} onCancel={() => setMode(null)} saving={saving} />
+        {/* Tab Selector */}
+        {mode === null && (
+          <div style={{ display: "flex", gap: 12, borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 12 }}>
+            <button
+              onClick={() => setActiveTab("listings")}
+              style={{
+                background: activeTab === "listings" ? "rgba(0,188,212,0.15)" : "transparent",
+                color: activeTab === "listings" ? "#00e5ff" : "#94a3b8",
+                border: activeTab === "listings" ? "1px solid rgba(0,188,212,0.3)" : "1px solid transparent",
+                borderRadius: 8,
+                padding: "8px 16px",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              📦 Shop Listings
+            </button>
+            <button
+              onClick={() => setActiveTab("reviews")}
+              style={{
+                background: activeTab === "reviews" ? "rgba(0,188,212,0.15)" : "transparent",
+                color: activeTab === "reviews" ? "#00e5ff" : "#94a3b8",
+                border: activeTab === "reviews" ? "1px solid rgba(0,188,212,0.3)" : "1px solid transparent",
+                borderRadius: 8,
+                padding: "8px 16px",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              💬 Customer Reviews
+            </button>
           </div>
         )}
 
-        {/* ── Edit Card Workspace ── */}
-        {mode === "edit" && editCard && (
+        {/* ── Add Workspace ── */}
+        {mode === "add" && (
           <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 32, boxShadow: "0 12px 32px rgba(0,0,0,0.2)" }}>
-            <h2 style={{ color: "#f9a825", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>✏️ Update Existing Card</h2>
-            <CardForm initial={{ ...editCard, features: stringifyFeatures(editCard.features) }} onSave={handleEdit} onCancel={() => { setMode(null); setEditCard(null); }} saving={saving} />
+            {activeTab === "listings" ? (
+              <>
+                <h2 style={{ color: "#00e5ff", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>➕ Create Listing Card</h2>
+                <CardForm onSave={handleAdd} onCancel={() => setMode(null)} saving={saving} />
+              </>
+            ) : (
+              <>
+                <h2 style={{ color: "#00e5ff", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>➕ Create Customer Review</h2>
+                <ReviewForm onSave={handleAddReview} onCancel={() => setMode(null)} saving={saving} />
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── Edit Workspace ── */}
+        {mode === "edit" && (
+          <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 32, boxShadow: "0 12px 32px rgba(0,0,0,0.2)" }}>
+            {activeTab === "listings" && editCard ? (
+              <>
+                <h2 style={{ color: "#f9a825", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>✏️ Update Existing Card</h2>
+                <CardForm initial={{ ...editCard, features: stringifyFeatures(editCard.features) }} onSave={handleEdit} onCancel={() => { setMode(null); setEditCard(null); }} saving={saving} />
+              </>
+            ) : editReview ? (
+              <>
+                <h2 style={{ color: "#f9a825", fontWeight: 800, fontSize: 18, marginTop: 0, marginBottom: 24 }}>✏️ Update Customer Review</h2>
+                <ReviewForm initial={editReview} onSave={handleEditReview} onCancel={() => { setMode(null); setEditReview(null); }} saving={saving} />
+              </>
+            ) : null}
           </div>
         )}
 
         {/* ── Main Workspace List ── */}
-        {mode === null && (
+        {mode === null && activeTab === "listings" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Payment Sub-settings section built beautifully inside row spacing */}
             <div style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 12 }}>
                 <h3 style={{ margin: 0, color: "#fff", fontSize: 16 }}>💳 Payment Configurations</h3>
               </div>
-              
+
               <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                 {/* Current QR Code Preview */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, padding: 16, width: 150, minWidth: 150, justifyContent: "center" }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>QR Preview</div>
                   {qrUrl ? (
-                    <img 
-                      src={getDirectImageLink(qrUrl)} 
-                      alt="QR Preview" 
-                      style={{ width: 100, height: 100, objectFit: "contain", borderRadius: 8, background: "#fff", padding: 4 }} 
+                    <img
+                      src={getDirectImageLink(qrUrl)}
+                      alt="QR Preview"
+                      style={{ width: 100, height: 100, objectFit: "contain", borderRadius: 8, background: "#fff", padding: 4 }}
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E";
@@ -425,7 +674,7 @@ export default function Admin() {
                 <form onSubmit={savePaymentSettings} style={{ flex: "1 1 400px", display: "flex", flexDirection: "column", gap: 16 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
                     <Input label="Shop Merchant UPI ID" value={upiId} onChange={setUpiId} placeholder="merchant@upi" />
-                    
+
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       <label style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                         QR Code URL (or upload below)
@@ -454,19 +703,19 @@ export default function Admin() {
                   <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                     {/* File Upload Trigger */}
                     <div style={{ flex: "1 1 200px" }}>
-                      <label 
-                        style={{ 
-                          display: "inline-flex", 
-                          alignItems: "center", 
-                          justifyContent: "center", 
-                          gap: 8, 
-                          padding: "12px 16px", 
-                          background: uploadingQr ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.08)", 
-                          border: "1px solid rgba(255,255,255,0.1)", 
-                          borderRadius: 10, 
-                          color: uploadingQr ? "#64748b" : "#fff", 
-                          fontWeight: 600, 
-                          fontSize: 13, 
+                      <label
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                          padding: "12px 16px",
+                          background: uploadingQr ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.08)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: 10,
+                          color: uploadingQr ? "#64748b" : "#fff",
+                          fontWeight: 600,
+                          fontSize: 13,
                           cursor: uploadingQr ? "not-allowed" : "pointer",
                           textAlign: "center",
                           width: "100%",
@@ -474,28 +723,28 @@ export default function Admin() {
                         }}
                       >
                         📁 {uploadingQr ? `Uploading (${uploadProgress}%)` : "Upload QR Image"}
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          onChange={handleQrUpload} 
-                          disabled={uploadingQr} 
-                          style={{ display: "none" }} 
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleQrUpload}
+                          disabled={uploadingQr}
+                          style={{ display: "none" }}
                         />
                       </label>
                     </div>
 
-                    <button 
-                      type="submit" 
-                      disabled={savingSettings || uploadingQr} 
-                      style={{ 
-                        flex: "1 1 200px", 
-                        height: 42, 
-                        background: (savingSettings || uploadingQr) ? "#334155" : "#00bcd4", 
-                        color: "#000", 
-                        border: "none", 
-                        borderRadius: 10, 
-                        fontWeight: 700, 
-                        fontSize: 13, 
+                    <button
+                      type="submit"
+                      disabled={savingSettings || uploadingQr}
+                      style={{
+                        flex: "1 1 200px",
+                        height: 42,
+                        background: (savingSettings || uploadingQr) ? "#334155" : "#00bcd4",
+                        color: "#000",
+                        border: "none",
+                        borderRadius: 10,
+                        fontWeight: 700,
+                        fontSize: 13,
                         cursor: (savingSettings || uploadingQr) ? "not-allowed" : "pointer",
                         transition: "background 0.2s"
                       }}
@@ -563,6 +812,61 @@ export default function Admin() {
                         style={{ background: deletingId === card.id ? "#374151" : "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10, padding: "10px 20px", fontWeight: 600, fontSize: 13, cursor: deletingId === card.id ? "not-allowed" : "pointer" }}
                       >
                         {deletingId === card.id ? "Removing..." : "🗑 Remove"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Reviews Main Workspace List ── */}
+        {mode === null && activeTab === "reviews" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+              <h2 style={{ color: "#94a3b8", fontWeight: 700, fontSize: 16, margin: 0 }}>
+                Review Management
+              </h2>
+              <button onClick={fetchReviews} style={{ background: "rgba(12, 114, 187, 1)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", color: "white", fontSize: 15, cursor: "pointer", fontWeight: 500 }}>
+                🔄 Refresh
+              </button>
+            </div>
+
+            {loadingReviews ? (
+              <div style={{ textAlign: "center", color: "#64748b", padding: 60, background: "#131338", borderRadius: 16 }}>Syncing review dataset...</div>
+            ) : reviews.length === 0 ? (
+              <div style={{ textAlign: "center", color: "#64748b", padding: 60, background: "#131338", borderRadius: 16, border: "1px dashed rgba(255,255,255,0.1)" }}>No customer reviews found. Create your first review to show client testimonials!</div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
+                {reviews.map(rev => (
+                  <div
+                    key={rev.id}
+                    style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 16, padding: 12, display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap", justifySelf: "stretch" }}
+                  >
+                    <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>{rev.name}</div>
+                      <span style={{ fontSize: 14, borderRadius: 12, background: "#0d0d2b", border: "1px solid rgba(255,255,255,0.05)", fontWeight: 700, color: "yellow" }}>★ {rev.stars}</span>
+                    </div>
+
+                    <div style={{ flex: "1 1 240px" }}>
+                      <div style={{ color: "#94a3b8", fontSize: 13, marginBottom: 6, fontStyle: "italic" }}>"{rev.text}"</div>
+                      <div style={{ color: "#64748b", fontSize: 11 }}>⏰ {rev.time}</div>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 10, flexShrink: 0, marginLeft: "auto" }}>
+                      <button
+                        onClick={() => { setEditReview(rev); setMode("edit"); }}
+                        style={{ background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 20px", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "background 0.2s" }}
+                      >
+                        ✏️ Edit Data
+                      </button>
+                      <button
+                        onClick={() => handleDeleteReview(rev.id)}
+                        disabled={deletingId === rev.id}
+                        style={{ background: deletingId === rev.id ? "#374151" : "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10, padding: "10px 20px", fontWeight: 600, fontSize: 13, cursor: deletingId === rev.id ? "not-allowed" : "pointer" }}
+                      >
+                        {deletingId === rev.id ? "Removing..." : "🗑 Remove"}
                       </button>
                     </div>
                   </div>
