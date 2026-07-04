@@ -241,14 +241,14 @@ export default function AdminAccounts() {
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d2b", padding: "40px 24px", boxSizing: "border-box", fontFamily: "sans-serif" }}>
       <div style={{ maxWidth: 1040, margin: "0 auto", display: "flex", flexDirection: "column", gap: 32 }}>
-        
+
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <span style={{ fontSize: 32 }}>🎮</span>
             <div>
               <h1 style={{ color: "#fff", fontWeight: 900, fontSize: 24, margin: 0 }}>Shop Accounts</h1>
-              <p style={{ color: "#64748b", fontSize: 14, margin: "4px 0 0 0" }}>Manage game listings, statuses, and configurations</p>
+              <p style={{ color: "#64748b", fontSize: 14, margin: "4px 0 0 0" }}>Manage account listings, statuses, and configurations</p>
             </div>
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>

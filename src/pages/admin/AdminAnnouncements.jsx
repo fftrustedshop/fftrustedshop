@@ -169,7 +169,7 @@ export default function AdminAnnouncements() {
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d2b", padding: "40px 24px", boxSizing: "border-box", fontFamily: "sans-serif" }}>
       <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", flexDirection: "column", gap: 32 }}>
-        
+
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -222,7 +222,7 @@ export default function AdminAnnouncements() {
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <h2 style={{ color: "#94a3b8", fontWeight: 700, fontSize: 16, margin: 0 }}>
-                Ticker Queue (Ascending Order)
+                Announcements
               </h2>
               <button onClick={fetchAnnouncements} style={{ background: "rgba(12, 114, 187, 1)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", color: "white", fontSize: 15, cursor: "pointer", fontWeight: 500 }}>
                 🔄 Refresh
@@ -238,12 +238,8 @@ export default function AdminAnnouncements() {
                 {announcements.map((item, index) => (
                   <div
                     key={item.id}
-                    style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", justifySelf: "stretch" }}
+                    style={{ background: "#131338", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, padding: "8px", display: "flex", alignItems: "center", justifySelf: "stretch" }}
                   >
-                    {/* Index tracker */}
-                    <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#0d0d2b", display: "flex", alignItems: "center", justifyContent: "center", color: "#00e5ff", fontWeight: 800, fontSize: 14, flexShrink: 0, marginRight: 16 }}>
-                      {index + 1}
-                    </div>
 
                     <div style={{ color: "#fff", fontWeight: 600, fontSize: 15, flexGrow: 1, marginRight: 16 }}>
                       {item.text}
