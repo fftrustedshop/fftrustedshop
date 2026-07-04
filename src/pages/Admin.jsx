@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const ADMIN_PASSWORD = "fftrustedshop";
+const ADMIN_PASSWORD = "RAISAHB200400";
 
 export default function Admin() {
   const [authed, setAuthed] = useState(false);
